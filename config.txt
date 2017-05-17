@@ -1,0 +1,16 @@
+[database]
+host: localhost
+db: amazon
+col: sharp
+
+[feature]
+f0: 満足感
+f1: デザイン
+f2: 書き心地
+f3: 耐久性
+f4: 値段
+f5: 重量
+
+# add search condition if you need 
+[condition]
+star: 2.0
