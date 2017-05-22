@@ -2,6 +2,7 @@
 host: localhost
 db: amazon
 col: sharp
+key: feature
 
 [feature]
 f0: 満足感

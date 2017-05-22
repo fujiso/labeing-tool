@@ -35,8 +35,10 @@ class Test(QMainWindow):
         self.col = self.db[self.col_name]
 
         self.feature_list = feature
-        self.feature_key = args.key
-        self.cond = dect(condition)
+        self.feature_key = database["key"]
+        self.cond = dict(condition)
+
+        self.merge_dict = lambda a, b: a.update(b) or a
         # タグ付け終わったものを操作するかのフラグ 操作しない = True
         self.flag = True
         # 左上：　現在開いているdbの名前表示
@@ -54,7 +56,8 @@ class Test(QMainWindow):
             item = self.ui.listWidget.item(num)
             item.setText(product)
             # 一つの商品すべてにタグ付けが終わっている場合、グレー背景にする
-            if not self.col.count({"product": product, "tagged": False}.update(self.cond)):
+            if not self.col.count(
+                    self.merge_dict({"product": product, "tagged": False}, self.cond)):
                 item.setBackground(QColor(150, 150, 150))
 
         # 先頭の要素を被選択状態にする（エラー防止）
@@ -74,7 +77,7 @@ class Test(QMainWindow):
         self.ui.checkBox.clicked.connect(self.changeFlag)
 
     def selectProduct(self):
-        """
+        """(lambda a,b: a.update(b) or a)({'a':1, 'b':3},{'c':5})
         左上に配置いてある決定ボタンを押したときに、実行される。
         横のツリータブで選択されている商品のドキュメントを読み込み、必要な情報を表示する。
 
@@ -96,9 +99,10 @@ class Test(QMainWindow):
         # 選択した商品についての情報の表示
         self.ui.label_product.setText("product:{pro}".format(pro=product))
         self.ui.label_all.setText("総数:{all}".format(
-            all=self.col.count({"product": product, "star": "2.0"})))
+            all=self.col.count(self.merge_dict({"product": product}, self.cond))))
         self.ui.label_tagged.setText("済：{tagged}".format(
-            tagged=self.col.count({"product": product, "tagged": True}.update(self.cond))))
+            tagged=self.col.count(
+                self.merge_dict({"product": product, "tagged": True}, self.cond))))
         # データセットが空の時
         if not self.data_list:
             self.ui.textBrowser.setText(
@@ -154,7 +158,7 @@ class Test(QMainWindow):
                 == self.col.count({"product": product}.update(self.cond)):
             self.ui.textBrowser.setText("この商品のタグ付けは終了です。お疲れ様でした。")
             self.ui.label_tagged.setText("済：{tagged}".format(
-                tagged=self.col.count({"product": product, "tagged": True, "star": "2.0"})))
+                tagged=self.col.count({"product": product, "tagged": True}.update(self.cond))))
             self.nowitem.setBackground(QColor(150, 150, 150))
             return
 
@@ -176,7 +180,7 @@ class Test(QMainWindow):
             self.ui.label_5.setText("評価：{star}".format(
                 star=nextdata["star"]))
         self.ui.label_tagged.setText("済：{tagged}".format(
-            tagged=self.col.count({"product": product, "tagged": True, "star": "2.0"})))
+            tagged=self.col.count({"product": product, "tagged": True}.update(self.cond))))
 
     def dropout(self):
         product = self.nowitem.text()
@@ -186,11 +190,11 @@ class Test(QMainWindow):
         self.list_index += 1
 
         # タグ付終了時
-        if self.col.count({"product": product, "tagged": True, "star": "2.0"})\
-                == self.col.count({"product": product, "star": "2.0"}):
+        if self.col.count({"product": product, "tagged": True}.update(self.cond))\
+                == self.col.count({"product": product}.update(self.cond)):
             self.ui.textBrowser.setText("この商品のタグ付けは終了です。お疲れ様でした。")
             self.ui.label_all.setText("総数:{all}".format(
-                all=self.col.count({"product": product, "star": "2.0"})))
+                all=self.col.count({"product": product}.update(self.cond))))
             self.nowitem.setBackground(QColor(150, 150, 150))
             return
 
@@ -212,7 +216,7 @@ class Test(QMainWindow):
             self.ui.label_5.setText("評価：{star}".format(
                 star=nextdata["star"]))
         self.ui.label_all.setText("総数:{all}".format(
-            all=self.col.count({"product": product, "star": "1.0"})))
+            all=self.col.count({"product": product}.update(self.cond))))
 
     def changeFlag(self):
         """
